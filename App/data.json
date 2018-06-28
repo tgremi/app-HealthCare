@@ -1,0 +1,22 @@
+{
+    "_id": "186668586785441016",
+    "first_name": "Thalles William ",
+    "last_name": "Gremio",
+    "email": "Thallesgremi@gmail.com",
+    "age": null,
+    "password": "$2b$10$KBRBi4ft7EnPuMijm8i/JOIGS1ezga1RhcQHDqJEOYWW1.sgvdcIW",
+    "country": "Brasil",
+    "elderly": {
+        "first_name": "",
+        "last_name": "",
+        "age": "",
+        "weight": "",
+        "height": ""
+    },
+    "contacts": [
+        {
+            "name": "",
+            "celphone": ""
+        }
+    ]
+}

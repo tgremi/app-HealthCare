@@ -1,91 +1,68 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
+ * Author: Thalles W. Gremi
+ * https://github.com/tgremi
+ * thallesgremi@gmail.com
+ * 
  */
 
-import React, { Component } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import HomeScreen from './Components/HomeScreen';
-import { NativeRouter, Route } from 'react-router-native';
-import LoginScreen from './Components/LoginScreen'
-import RegisterScreen from './Components/RegisterScreen'
-import { StackNavigator } from 'react-navigation';
+import React, { Component } from 'react'
+import { Provider, connect } from 'react-redux'
+import { StackNavigator, addNavigationHelpers } from 'react-navigation'
+import NavigationService from './NavigationService';
+import { AsyncStorage } from 'react-native';
+import Routes from './config/routes'
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+import getStore from './store'
+import { addListener } from './store'
 
-type Props = {};
+const Navigator = StackNavigator(Routes, {
+  headerMode: 'screen'
+})
 
-const RootStack = StackNavigator({
-  Home: {
-    screen: HomeScreen,
-    navigationOptions: ({ navigation }) => ({
-      header: false
-    }),
+const navReducer = (state, action) => {
+  const newState = Navigator.router.getStateForAction(action, state)
+  console.log(newState)
+  return newState || state
+}
 
-  },
-  Login: {
-    screen: LoginScreen,
-    navigationOptions: ({ navigation }) => ({
-      header: false
-    }),
+class App extends Component {
+  componentDidMount = () => {
+    // AsyncStorage.clear(); 
+    
+    this._initialLoadState().done();
+  }
 
-  },
-  Register: {
-    screen: RegisterScreen,
-    navigationOptions: ({ navigation }) => ({
-      header: false
-    }),
-
-  },
-},
-  {
-    initialRouteName: 'Home',
-  },
-  { headerMode: 'none' },
-
-);
-
-
-export default class App extends Component<Props> {
-  static navigationOptions = {
-    header: {
-      visible: false,
+  _initialLoadState = async () => {
+    let value = await AsyncStorage.getItem('route');
+    if (value !== null) {
+      NavigationService.navigate(value)
     }
   }
+
   render() {
     return (
-      <RootStack />
-    );
+      <Navigator
+        ref={navigatorRef => {
+          NavigationService.setContainer(navigatorRef);
+        }}
+        // navigation={addNavigationHelpers({
+        //  })}
+        dispatch={this.props.dispatch}
+        state={this.props.nav}
+        addListener
+
+      />
+    )
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+const store = getStore(navReducer);
+const AppIndex = connect(state => (console.log(state), { nav: state.nav }))(App)
+
+export default Index = () => {
+  return (
+    <Provider store={store}>
+      <AppIndex />
+    </Provider>
+  )
+}

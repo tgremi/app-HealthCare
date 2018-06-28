@@ -1,20 +1,32 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, Button, TextInput, DatePickerIOS } from 'react-native';
+import { Platform, StyleSheet, Text, View, Button, TextInput, DatePickerIOS, AsyncStorage } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FIcon from 'react-native-vector-icons/FontAwesome';
 import { Link } from 'react-router-native';
 import { StackNavigator } from 'react-navigation';
+import { POST } from '../api/registerPost';
+import { NavigationActions } from 'react-navigation';
+import ElderlyRegisterScreen from './ElderlyRegisterScreen';
+
+const stackElderly = StackNavigator({
+    ElderlyRegister: {
+        screen: ElderlyRegisterScreen,
+        navigationOptions: ({ navigation }) => ({
+            header: false
+        })
+    }
+})
 
 class RegisterScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
             firstName: '',
-            pass: '',
+            password: '',
             lastName: '',
             country: '',
-            email: '', 
-
+            email: '',
+            responseFromApi: '',
             birthDay: new Date(),
         }
         this.setDate = this.setDate.bind(this);
@@ -25,14 +37,42 @@ class RegisterScreen extends Component {
     }
 
     handleChangeTextInput(state, value) {
-        console.log(state, '<--- aqui')
-        this.setState({ [state]: value }, () => {
-            console.log(this.state, '<--  todos estados')
-        })
+        this.setState({ [state]: value })
     }
 
+    sendRegisterUser() {
+        let data = {
+            first_name: this.state.firstName,
+            last_name: this.state.lastName,
+            country: this.state.country,
+            birth_day: this.state.birthDay,
+            email: this.state.email,
+            password: this.state.password
+        }
+        const changeRouteToElderly = NavigationActions.navigate({
+            routeName: 'ElderlyRegister',
+            params: {},
+            // action: NavigationActions.navigate({ routeName: 'ElderlyRegister' })
+        });
+
+        POST.registerUser(data, (error, success) => {
+            console.log(success)
+            if (!error) {
+                if (success.code == 200) {
+                    let user = success.message.user.email;
+                    console.log(user)
+                    AsyncStorage.setItem('user', user);
+                    AsyncStorage.setItem('route', 'ElderlyRegister');
+                    this.props.navigation.navigate('ElderlyRegister');
+                }
+            } else {
+                throw error;
+            }
+        })
+    }
+    
     render() {
-        console.log(this.state, '<-- estados no rende')
+        console.log(this.props, '<--- props')
         return (
             <View style={styles.container}>
 
@@ -45,6 +85,7 @@ class RegisterScreen extends Component {
                         style={styles.input}
                         onChangeText={(email) => this.handleChangeTextInput('email', email)}
                         placeholder="Email"
+                        placeholderTextColor="#6ac4bb"
                         value={this.state.email}
                     />
                 </View>
@@ -54,8 +95,9 @@ class RegisterScreen extends Component {
                     </View>
                     <TextInput
                         style={styles.input}
-                        onChangeText={(name) => this.handleChangeTextInput('firstName', firstName)}
+                        onChangeText={(firstName) => this.handleChangeTextInput('firstName', firstName)}
                         placeholder="Nome"
+                        placeholderTextColor="#6ac4bb"
                         value={this.state.firstName}
                     />
                 </View>
@@ -65,8 +107,9 @@ class RegisterScreen extends Component {
                     </View>
                     <TextInput
                         style={styles.input}
-                        onChangeText={(name) => this.handleChangeTextInput('lastName', lastName)}
+                        onChangeText={(lastName) => this.handleChangeTextInput('lastName', lastName)}
                         placeholder="Sobrenome"
+                        placeholderTextColor="#6ac4bb"
                         value={this.state.lastName}
                     />
                 </View>
@@ -89,6 +132,7 @@ class RegisterScreen extends Component {
                         style={styles.input}
                         onChangeText={(country) => this.handleChangeTextInput('country', country)}
                         placeholder="País"
+                        placeholderTextColor="#6ac4bb"
                         value={this.state.country}
                     />
                 </View>
@@ -100,20 +144,21 @@ class RegisterScreen extends Component {
                     <TextInput
                         secureTextEntry={true}
                         style={styles.input}
+                        placeholderTextColor="#6ac4bb"
                         onChangeText={(password) => this.handleChangeTextInput('password', password)}
-                        placeholder="País"
+                        placeholder="Senha"
                         value={this.state.password}
                     />
                 </View>
                 <View style={styles.buttons}>
                     <Button
-                        onPress={() => console.log("loginPress")}
+                        onPress={() => this.sendRegisterUser()}
                         title="Ok"
                         color="#6ac4bb"
                     />
                     <Button
                         onPress={() => this.props.navigation.goBack(null)}
-                        title="Back"
+                        title="Voltar"
                         color="#6ac4bb"
                     />
                 </View>
@@ -170,4 +215,5 @@ export default StackNavigator({
             header: false
         }),
     },
+
 });
